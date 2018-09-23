@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+
+
+<!-- 扫描外部文件 -->
+<context:property-placeholder location="classpath:db.properties"/>
+
+<!-- 开启扫描注解 -->
+<context:component-scan base-package="cn.itheima"/>
+
+<!-- 配置数据源（即连接池） -->
+<bean class="com.mchange.v2.c3p0.ComboPooledDataSource" id="dataSource">
+	<property name="user" value="${jdbc.user}"></property>
+	<property name="password" value="${jdbc.password}"></property>
+	<property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+	<property name="driverClass" value="${jdbc.driverClass}"></property>
+	<property name="maxPoolSize" value="${jdbc.maxPoolSize}"></property>
+	<property name="minPoolSize" value="${jdbc.minPoolSize}"></property>
+	<property name="initialPoolSize" value="${jdbc.initialPoolSize}"></property>
+</bean>
+
+
+<!-- Spring中的事务管理
+		注意：（1）编码式事务管理（这种不使用）
+			 （2）声明式事务管理（利用spring的aop）
+ -->
+ 
+ <!-- 1.配置事务管理器  -->
+<bean class="org.springframework.jdbc.datasource.init.DataSourceInitializer" id="transactionManager">
+	<property name="dataSource" ref="dataSource"></property>
+</bean>
+ 
+ <!-- 2.开启注解事务支持，默认引用的transaction-manager是transactionManager -->
+ <tx:annotation-driven transaction-manager="transactionManager"/>
+ 
+ <!-- 注解完成事务详解：@Transaction注解 ，该注解可用加在方法上，也可以加在类上
+ 		@Transaction的详解:
+ 			(1)propagation属性:用来设置事务的传播行为
+ 			   事务的传播行为:一个方法运行在一个开启了事务的方法中时，当前方法是使用原有的事务
+ 			   还是开启新的事务？这就叫事务的传播行为
+ 			 propagation的默认值为:Propagation.REQUIRED(默认使用现有的事务)
+ 			 propagation的值:Propagation.REQUIRED_NEW(不使用现有的事务，而开启自身的事务)
+ 			(2)isolation:用来设置事务的隔离级别
+ 			   -REPEATABLE_READ:可重复读，MySql默认
+ 			   -READ_COMMITTED:读已提交，Oracle默认
+ 			   总结：一般使用READ_COMMITTED
+ 			(3)rollbackFor:遇到什么异常回滚，值是异常的类型
+ 			   rollbackForClassName:遇到什么异常回滚，值是异常的名字
+ 			   noRollbackFor:设置不回滚，值是异常的类型
+ 			   noRollbackForClassName:设置不回滚，值是异常的名字
+ 			(4)readonly:设置只读属性，通常情况下如果是查询的操作，该属性
+ 			设置readonly为true，如果不是可用设置readonly为false   
+ 			(5)timeout:用来设置超时的时间，单位为秒
+  -->
+</beans>
